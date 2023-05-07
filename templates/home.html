@@ -23,53 +23,121 @@
     {% endif %}
 </div>
 
-<div>
-    <h3> Insert Student </h3>
-    <form action="/insert_student" method="post">
-        <p> name: <input type="text" name="name"></p>
-        <p> surname: <input type="text" name="surname"></p>
-        <p> email: <input type="text" name="email"></p>
-        <p> phone: <input type="text" name="phone"></p>
-        <p><input type="submit" value="submit"></p>
-    </form>
+<div style="display:flex">
+    <div>
+        <h3> Insert Student </h3>
+        <form action="/insert_student" method="post">
+            <p> name: <input type="text" name="name"></p>
+            <p> surname: <input type="text" name="surname"></p>
+            <p> email: <input type="text" name="email"></p>
+            <p> phone: <input type="text" name="phone"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+
+    <div>
+        <h3> Insert Group </h3>
+        <form action="/insert_group" method="post">
+            <p> name: <input type="text" name="name"></p>
+            <p> course: <input type="text" name="course"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+
+    <div>
+        <h3> Insert Faculty </h3>
+        <form action="/insert_faculty" method="post">
+            <p> name: <input type="text" name="name"></p>
+            <p> location: <input type="text" name="location"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+
+    <div>
+        <h3> Insert Course </h3>
+        <form action="/insert_course" method="post">
+            <p> name: <input type="text" name="name"></p>
+            <p> level: <input type="text" name="level"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+
+    <div>
+        <h3> Insert Professor </h3>
+        <form action="/insert_professor" method="post">
+            <p> name: <input type="text" name="name"></p>
+            <p> surname: <input type="text" name="surname"></p>
+            <p> email: <input type="text" name="email"></p>
+            <p> phone: <input type="text" name="phone"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
 </div>
 
-<div>
-    <h3> Insert Group </h3>
-    <form action="/insert_group" method="post">
-        <p> name: <input type="text" name="name"></p>
-        <p> course: <input type="text" name="course"></p>
-        <p><input type="submit" value="submit"></p>
-    </form>
+<div style="display:flex">
+    <div>
+        <h3> Add Student To Group </h3>
+        <form action="/student_to_group" method="post">
+            <p> StudentID: <input type="text" name="studentID"></p>
+            <p> GroupID: <input type="text" name="groupID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+    
+    <div>
+        <h3> Add Group To Faculty </h3>
+        <form action="/group_to_faculty" method="post">
+            <p> GroupID: <input type="text" name="groupID"></p>
+            <p> FacultyID: <input type="text" name="facultyID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+    
+    <div>
+        <h3> Add Courses To Professor </h3>
+        <form action="/course_to_professor" method="post">
+            <p> CourseID: <input type="text" name="courseID"></p>
+            <p> ProfessorID: <input type="text" name="professorID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+    
+    <div>
+        <h3> Add Courses To Group </h3>
+        <form action="/course_to_group" method="post">
+            <p> CourseID: <input type="text" name="courseID"></p>
+            <p> GroupID: <input type="text" name="groupID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
 </div>
 
-<div>
-    <h3> Insert Faculty </h3>
-    <form action="/insert_faculty" method="post">
-        <p> name: <input type="text" name="name"></p>
-        <p> location: <input type="text" name="location"></p>
-        <p><input type="submit" value="submit"></p>
-    </form>
+<div style="display:flex">
+    <div>
+        <h3> Get All Students In Group </h3>
+        <form action="/students_in_group" method="post">
+            <p> GroupID: <input type="text" name="groupID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
+
+    <div>
+        <h3> Get All Courses In Group </h3>
+        <form action="/courses_in_group" method="post">
+            <p> GroupID: <input type="text" name="groupID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
 </div>
 
-<div>
-    <h3> Insert Course </h3>
-    <form action="/insert_course" method="post">
-        <p> name: <input type="text" name="name"></p>
-        <p> level: <input type="text" name="level"></p>
-        <p><input type="submit" value="submit"></p>
-    </form>
-</div>
-
-<div>
-    <h3> Insert Professor </h3>
-    <form action="/insert_professor" method="post">
-        <p> name: <input type="text" name="name"></p>
-        <p> surname: <input type="text" name="surname"></p>
-        <p> email: <input type="text" name="email"></p>
-        <p> phone: <input type="text" name="phone"></p>
-        <p><input type="submit" value="submit"></p>
-    </form>
+<div style="display:flex">
+    <div>
+        <h3> Get Students Group </h3>
+        <form action="/group_of_student" method="post">
+            <p> StudentID: <input type="text" name="studentID"></p>
+            <p><input type="submit" value="submit"></p>
+        </form>
+    </div>
 </div>
 
 <div>
@@ -84,7 +152,7 @@
 </div>
 
 <div>
-    <h3> Get All Students </h3>
+    <h3> Get All </h3>
     <form action="/get_all" method="post">
         {% for clas in classes %}
             <p><input type="radio" name="class" value="{{ clas }}"> {{ clas }}</p>
@@ -92,3 +160,4 @@
         <p><input type="submit" value="submit"></p>
     </form>
 </div>
+

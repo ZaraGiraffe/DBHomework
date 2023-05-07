@@ -87,7 +87,7 @@ def create_professors(cur):
 
 def add_foreign_key(cur, clasWhere, IDWhere, clasTo, IDTo):
     query1 = f"ALTER TABLE {clasWhere} " + \
-    f"ADD FOREIGN KEY ({IDWhere}) REFERENCES {clasTo}({IDTo})"
+    f"ADD FOREIGN KEY ({IDWhere}) REFERENCES {clasTo}({IDTo}) ON DELETE CASCADE"
     query2 = f"ALTER TABLE {clasWhere} " + \
     f"ADD {IDWhere} int"
     try:

@@ -173,3 +173,102 @@ def delete_func():
     return redirect("/")
 
 
+@app.route("/student_to_group", methods=["POST"])
+def student_to_group_func():
+    studentID = request.form["studentID"]
+    groupID = request.form["groupID"]
+    try:
+        cur.execute(f"UPDATE students SET FK_GroupID={groupID} WHERE StudentID={studentID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["info"] = "You have added student to a group"
+    return redirect("/")
+
+
+@app.route("/group_to_faculty", methods=["POST"])
+def group_to_faculty_func():
+    groupID = request.form["groupID"]
+    facultyID = request.form["facultyID"]
+    try:
+        cur.execute(f"UPDATE groups SET FK_FacultyID={facultyID} WHERE GroupID={groupID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["info"] = "You have added group to a faculty"
+    return redirect("/")
+
+
+@app.route("/course_to_professor", methods=["POST"])
+def course_to_professor_func():
+    courseID = request.form["courseID"]
+    professorID = request.form["professorID"]
+    try:
+        cur.execute(f"UPDATE courses SET FK_ProfessorID={professorID} WHERE CourseID={courseID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["info"] = "You have added course to a professor"
+    return redirect("/")
+
+
+@app.route("/course_to_group", methods=["POST"])
+def course_to_group_func():
+    courseID = request.form["courseID"]
+    groupID = request.form["groupID"]
+    try:
+        cur.execute(f"UPDATE courses SET FK_GroupID={groupID} WHERE CourseID={courseID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["info"] = "You have added course to a group"
+    return redirect("/")
+
+
+@app.route("/students_in_group", methods=["POST"])
+def students_in_group_func():
+    groupID = request.form["groupID"]
+    mycolumns = list(filter(lambda x: not x.startswith("FK"), columns["students"]))
+    string = ", ".join(mycolumns)
+    print(string, file=sys.stderr)
+    try:
+        cur.execute(f"SELECT {string} FROM students WHERE students.FK_GroupID={groupID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["table"] = cur.fetchall()
+    session["headers"] = mycolumns
+    return redirect("/")
+
+@app.route("/courses_in_group", methods=["POST"])
+def courses_in_group_func():
+    groupID = request.form["groupID"]
+    mycolumns = list(filter(lambda x: not x.startswith("FK"), columns["courses"]))
+    string = ", ".join(mycolumns)
+    try:
+        cur.execute(f"SELECT {string} FROM courses WHERE courses.FK_GroupID={groupID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["table"] = cur.fetchall()
+    session["headers"] = mycolumns
+    return redirect("/")
+
+
+@app.route("/group_of_student", methods=["POST"])
+def group_of_student_func():
+    studentID = request.form["studentID"]
+    try:
+        cur.execute(f"SELECT FK_GroupID FROM students WHERE StudentID={studentID}")
+        groupID = cur.fetchall()[0][0]
+        print(groupID, file=sys.stderr)
+        if not groupID:
+            session["info"] = "Student doesn't have group"
+            return redirect("/")
+        cur.execute(f"SELECT * FROM groups WHERE groups.GroupID={groupID}")
+    except:
+        session["info"] = "Something wrong with ID"
+        return redirect("/")
+    session["table"] = cur.fetchall()
+    session["headers"] = list(filter(lambda x: not x.startswith("FK"), columns["groups"]))
+    return redirect("/")
