@@ -1,6 +1,18 @@
 import sys
 
 
+columns = {"students": ("StudentID", "Name", "Surname", "Email", "Phone", "FK_GroupID"),
+           "courses": ("CourseID", "Name", "Level", "FK_GroupID", "FK_ProfessorID"),
+           "faculties": ("FacultyID", "Name", "Location"),
+           "groups": ("GroupID", "Name", "Course", "FK_FacultyID"),
+           "professors": ("ProfessorID", "Name", "Surname", "Email", "Phone")}
+
+columns_primary = {"students": "StudentID",
+           "courses": "CourseID",
+           "faculties": "FacultyID",
+           "groups": "GroupID",
+           "professors": "ProfessorID"}
+
 def create_students(cur):
     query = "CREATE TABLE students (" + \
     "StudentID int NOT NULL AUTO_INCREMENT," + \

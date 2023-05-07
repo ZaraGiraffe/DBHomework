@@ -5,22 +5,18 @@
     {% if info_bool %}
         <p> {{ info }} </p>
     {% endif %}
-    {% if data_students_bool %}
+    {% if data_bool %}
         <table>
             <tr>
-                <td> No </td>
-                <td> Name </td>
-                <td> Surame </td>
-                <td> Emain </td>
-                <td> Phone </td>
+                {% for header in headers %}
+                    <td> {{ header }} </td>
+                {% endfor %}
             </tr>
-            {% for std in data_students %}
+            {% for row in table %}
                 <tr>
-                    <td> {{ std[0] }} </td>
-                    <td> {{ std[1] }} </td>
-                    <td> {{ std[2] }} </td>
-                    <td> {{ std[3] }} </td>
-                    <td> {{ std[4] }} </td>
+                    {% for entry in row %}
+                        <td> {{ entry }} </td>
+                    {% endfor %}
                 </tr>
             {% endfor %}
         </table>
@@ -30,17 +26,69 @@
 <div>
     <h3> Insert Student </h3>
     <form action="/insert_student" method="post">
-        <p><input type="text" value="name" name="name"></p>
-        <p><input type="text" value="surname" name="surname"></p>
-        <p><input type="text" value="email" name="email"></p>
-        <p><input type="text" value="phone" name="phone"></p>
+        <p> name: <input type="text" name="name"></p>
+        <p> surname: <input type="text" name="surname"></p>
+        <p> email: <input type="text" name="email"></p>
+        <p> phone: <input type="text" name="phone"></p>
+        <p><input type="submit" value="submit"></p>
+    </form>
+</div>
+
+<div>
+    <h3> Insert Group </h3>
+    <form action="/insert_group" method="post">
+        <p> name: <input type="text" name="name"></p>
+        <p> course: <input type="text" name="course"></p>
+        <p><input type="submit" value="submit"></p>
+    </form>
+</div>
+
+<div>
+    <h3> Insert Faculty </h3>
+    <form action="/insert_faculty" method="post">
+        <p> name: <input type="text" name="name"></p>
+        <p> location: <input type="text" name="location"></p>
+        <p><input type="submit" value="submit"></p>
+    </form>
+</div>
+
+<div>
+    <h3> Insert Course </h3>
+    <form action="/insert_course" method="post">
+        <p> name: <input type="text" name="name"></p>
+        <p> level: <input type="text" name="level"></p>
+        <p><input type="submit" value="submit"></p>
+    </form>
+</div>
+
+<div>
+    <h3> Insert Professor </h3>
+    <form action="/insert_professor" method="post">
+        <p> name: <input type="text" name="name"></p>
+        <p> surname: <input type="text" name="surname"></p>
+        <p> email: <input type="text" name="email"></p>
+        <p> phone: <input type="text" name="phone"></p>
+        <p><input type="submit" value="submit"></p>
+    </form>
+</div>
+
+<div>
+    <h3> Delete </h3>
+    <form action="/delete" method="post">
+        {% for clas in classes %}
+            <p><input type="radio" name="class" value="{{ clas }}"> {{ clas }}</p>
+        {% endfor %}
+        <p> ID: <input type="text" name="id"></p>
         <p><input type="submit" value="submit"></p>
     </form>
 </div>
 
 <div>
     <h3> Get All Students </h3>
-    <form action="/get_all_students" method="post">
+    <form action="/get_all" method="post">
+        {% for clas in classes %}
+            <p><input type="radio" name="class" value="{{ clas }}"> {{ clas }}</p>
+        {% endfor %}
         <p><input type="submit" value="submit"></p>
     </form>
 </div>
