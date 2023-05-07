@@ -4,6 +4,7 @@ from flask import render_template
 from flask import request
 from flask import redirect
 from flask import session
+from CreateTables import create_all_tables
 
 import mariadb
 import sys
@@ -26,30 +27,26 @@ except mariadb.Error as e:
 conn.autocommit = True
 cur = conn.cursor()
 
-create_table_classes = "CREATE TABLE CLASSES (" + \
-    "StudentID int NOT NULL AUTO_INCREMENT," + \
-    "Name varchar(100)," + \
-    "Surname varchar(100)," + \
-    "Email varchar(100)," + \
-    "Phone varchar(100)," + \
-    "PRIMARY KEY (StudentID)" + \
-")"
-
-try:
-    cur.execute("SELECT * FROM CLASSES")
-except:
-    cur.execute(create_table_classes)
-
+create_all_tables(cur)
 
 @app.route("/")
 def home_func():
     params = {}
+
     if "info" in session:
         params["info"] = session["info"]
         params["info_bool"] = True
         session.pop("info")
     else:
         params["info_bool"] = False
+    
+    if "data_students" in session:
+        params["data_students"] = session["data_students"]
+        params["data_students_bool"] = True
+        session.pop("data_students")
+    else:
+        params["data_students_bool"] = False
+
     return render_template("home.html", **params)
 
 
@@ -61,12 +58,17 @@ def insert_student_func():
     phone = request.form["phone"]
     info = f"Succesfully inserted a student {name}"
     try:
-        query = f"INSERT INTO CLASSES (Name, Surname, Email, Phone) " + \
+        query = f"INSERT INTO STUDENTS (Name, Surname, Email, Phone) " + \
                 f"VALUES ('{name}', '{surname}', '{email}', '{phone}')"
         cur.execute(query)
-        print(name, surname, email, phone, file = sys.stderr)
     except Exception as ex:
         info = f"Error: wrong format of input"
-        print(ex, file = sys.stderr)
     session["info"] = info
+    return redirect("/")
+
+@app.route("/get_all_students", methods=["POST"])
+def get_all_students_func():
+    query = f"SELECT * FROM STUDENTS"
+    cur.execute(query)
+    session["data_students"] = cur.fetchall()
     return redirect("/")
