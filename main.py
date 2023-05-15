@@ -5,11 +5,9 @@ from flask import request
 from flask import redirect
 from flask import session
 
-from CreateTables import create_all_tables
 from CreateTables import columns
 from CreateTables import columns_primary
 
-import pandas as pd
 
 import mariadb
 import sys
@@ -23,7 +21,7 @@ try:
         password="root",
         host="localhost",
         port=3306,
-        database="derevo"
+        database="derevo2"
     )
 except mariadb.Error as e:
     print(f"Error connecting to MariaDB Platform: {e}")
@@ -32,7 +30,6 @@ except mariadb.Error as e:
 conn.autocommit = True
 cur = conn.cursor()
 
-create_all_tables(cur)
 
 @app.route("/")
 def home_func():
@@ -53,87 +50,8 @@ def home_func():
         session.pop("headers")
     else:
         params["data_bool"] = False
-
     return render_template("home.html", **params)
 
-
-@app.route("/insert_student", methods=["POST"])
-def insert_student_func():
-    name = request.form["name"]
-    surname = request.form["surname"]
-    email = request.form["email"]
-    phone = request.form["phone"]
-    info = f"Succesfully inserted a student {name}"
-    try:
-        query = f"INSERT INTO students (Name, Surname, Email, Phone) " + \
-                f"VALUES ('{name}', '{surname}', '{email}', '{phone}')"
-        cur.execute(query)
-    except Exception as ex:
-        info = f"Error: wrong format of input"
-    session["info"] = info
-    return redirect("/")
-
-
-@app.route("/insert_group", methods=["POST"])
-def insert_group_func():
-    name = request.form["name"]
-    course = request.form["course"]
-    info = f"Succesfully inserted a group {name}"
-    try:
-        query = f"INSERT INTO groups (Name, Course) " + \
-                f"VALUES ('{name}', '{course}')"
-        cur.execute(query)
-    except Exception as ex:
-        info = f"Error: wrong format of input"
-    session["info"] = info
-    return redirect("/")
-
-
-@app.route("/insert_faculty", methods=["POST"])
-def insert_faculty_func():
-    name = request.form["name"]
-    location = request.form["location"]
-    info = f"Succesfully inserted a faculty {name}"
-    try:
-        query = f"INSERT INTO faculties (Name, Location) " + \
-                f"VALUES ('{name}', '{location}')"
-        cur.execute(query)
-    except Exception as ex:
-        info = f"Error: wrong format of input"
-    session["info"] = info
-    return redirect("/")
-
-
-@app.route("/insert_course", methods=["POST"])
-def insert_course_func():
-    name = request.form["name"]
-    level = request.form["level"]
-    info = f"Succesfully inserted a course {name}"
-    try:
-        query = f"INSERT INTO courses (Name, Level) " + \
-                f"VALUES ('{name}', '{level}')"
-        cur.execute(query)
-    except Exception as ex:
-        info = f"Error: wrong format of input"
-    session["info"] = info
-    return redirect("/")
-
-
-@app.route("/insert_professor", methods=["POST"])
-def insert_professor_func():
-    name = request.form["name"]
-    surname = request.form["surname"]
-    email = request.form["email"]
-    phone = request.form["phone"]
-    info = f"Succesfully inserted a professor {name}"
-    try:
-        query = f"INSERT INTO professors (Name, Surname, Email, Phone) " + \
-                f"VALUES ('{name}', '{surname}', '{email}', '{phone}')"
-        cur.execute(query)
-    except Exception as ex:
-        info = f"Error: wrong format of input"
-    session["info"] = info
-    return redirect("/")
 
 
 @app.route("/get_all", methods=["POST"])
@@ -145,130 +63,155 @@ def get_all_func():
         session["info"] = "You didn't select a class"
         return redirect("/")
     cur.execute(query)
-    df = pd.DataFrame(columns=columns[clas])
-    for k, v in enumerate(cur.fetchall()):
-        df.loc[k] = v
-    for col in df.columns:
-        if col.startswith("FK"):
-            df = df.drop(columns=[col])
-    session["table"] = [list(i) for i in df.to_numpy()]
-    session["headers"] = list(filter(lambda x: not x.startswith("FK"), columns[clas]))
-    return redirect("/")
-
-
-@app.route("/delete", methods=["POST"])
-def delete_func():
-    try:
-        clas = request.form["class"]
-    except:
-        session["info"] = "You didn't select a class" 
-        return redirect("/")
-    delete_id = request.form["id"]
-    try:
-        cur.execute(f"DELETE FROM {clas} WHERE {columns_primary[clas]}={delete_id}")
-    except:
-        session["info"] = "Something wrong with id"
-        return redirect("/")
-    session["info"] = f"Succesfully deleted an entry"
-    return redirect("/")
-
-
-@app.route("/student_to_group", methods=["POST"])
-def student_to_group_func():
-    studentID = request.form["studentID"]
-    groupID = request.form["groupID"]
-    try:
-        cur.execute(f"UPDATE students SET FK_GroupID={groupID} WHERE StudentID={studentID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
-    session["info"] = "You have added student to a group"
-    return redirect("/")
-
-
-@app.route("/group_to_faculty", methods=["POST"])
-def group_to_faculty_func():
-    groupID = request.form["groupID"]
-    facultyID = request.form["facultyID"]
-    try:
-        cur.execute(f"UPDATE groups SET FK_FacultyID={facultyID} WHERE GroupID={groupID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
-    session["info"] = "You have added group to a faculty"
-    return redirect("/")
-
-
-@app.route("/course_to_professor", methods=["POST"])
-def course_to_professor_func():
-    courseID = request.form["courseID"]
-    professorID = request.form["professorID"]
-    try:
-        cur.execute(f"UPDATE courses SET FK_ProfessorID={professorID} WHERE CourseID={courseID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
-    session["info"] = "You have added course to a professor"
-    return redirect("/")
-
-
-@app.route("/course_to_group", methods=["POST"])
-def course_to_group_func():
-    courseID = request.form["courseID"]
-    groupID = request.form["groupID"]
-    try:
-        cur.execute(f"UPDATE courses SET FK_GroupID={groupID} WHERE CourseID={courseID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
-    session["info"] = "You have added course to a group"
-    return redirect("/")
-
-
-@app.route("/students_in_group", methods=["POST"])
-def students_in_group_func():
-    groupID = request.form["groupID"]
-    mycolumns = list(filter(lambda x: not x.startswith("FK"), columns["students"]))
-    string = ", ".join(mycolumns)
-    print(string, file=sys.stderr)
-    try:
-        cur.execute(f"SELECT {string} FROM students WHERE students.FK_GroupID={groupID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
     session["table"] = cur.fetchall()
-    session["headers"] = mycolumns
-    return redirect("/")
-
-@app.route("/courses_in_group", methods=["POST"])
-def courses_in_group_func():
-    groupID = request.form["groupID"]
-    mycolumns = list(filter(lambda x: not x.startswith("FK"), columns["courses"]))
-    string = ", ".join(mycolumns)
-    try:
-        cur.execute(f"SELECT {string} FROM courses WHERE courses.FK_GroupID={groupID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
-    session["table"] = cur.fetchall()
-    session["headers"] = mycolumns
+    session["headers"] = columns[clas]
     return redirect("/")
 
 
-@app.route("/group_of_student", methods=["POST"])
-def group_of_student_func():
-    studentID = request.form["studentID"]
-    try:
-        cur.execute(f"SELECT FK_GroupID FROM students WHERE StudentID={studentID}")
-        groupID = cur.fetchall()[0][0]
-        print(groupID, file=sys.stderr)
-        if not groupID:
-            session["info"] = "Student doesn't have group"
-            return redirect("/")
-        cur.execute(f"SELECT * FROM groups WHERE groups.GroupID={groupID}")
-    except:
-        session["info"] = "Something wrong with ID"
-        return redirect("/")
+@app.route("/query1", methods=["POST"])
+def query1():
+    professor = request.form["professor"]
+    grade = request.form["course_grade"]
+    query = "SELECT DISTINCT c.CourseName " + \
+        "FROM courses c " + \
+        "INNER JOIN timetable t ON t.FK_CourseId = c.CourseId " + \
+        "INNER JOIN professors p ON p.ProfessorId = t.FK_ProfessorId " + \
+        "INNER JOIN groups g ON g.GroupId = t.FK_GroupId " + \
+        f"WHERE g.Grade = '{grade}' " + \
+        f"AND p.ProfessorName IN ('{professor}')"
+    cur.execute(query)
     session["table"] = cur.fetchall()
-    session["headers"] = list(filter(lambda x: not x.startswith("FK"), columns["groups"]))
+    session["headers"] = ["CourseName"]
+    return redirect("/")
+
+
+@app.route("/query2", methods=["POST"])
+def query2():
+    professor = request.form["professor"]
+    query = "SELECT s.StudentName, s.Surname " + \
+            "FROM students s " + \
+            "INNER JOIN groups g ON g.GroupId = s.Fk_GroupId " + \
+            "INNER JOIN timetable t ON t.FK_GroupId = g.GroupId " + \
+            "INNER JOIN professors p ON p.ProfessorId = t.FK_ProfessorId " + \
+            f"WHERE p.ProfessorName = '{professor}' " 
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["StudentName", "Surname"]
+    return redirect("/")
+
+
+@app.route("/query3", methods=["POST"])
+def query3():
+    faculty = request.form["faculty"]
+    day = request.form["day"]
+    query = "SELECT DISTINCT p.ProfessorName, p.Surname " + \
+            "FROM professors p " + \
+            "INNER JOIN timetable t ON t.FK_ProfessorId = p.ProfessorId " + \
+            "INNER JOIN groups g ON g.GroupId = t.FK_GroupId " + \
+            "INNER JOIN faculties f ON f.FacultyId = g.FK_FacultyId " + \
+            f"WHERE f.FacultyName = '{faculty}' " + \
+            f"AND t.LectureDay = '{day}' "
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["ProfessorName", "Surname"]
+    return redirect("/")
+
+
+@app.route("/query4", methods=["POST"])
+def query4():
+    student = request.form["student"]
+    professor = request.form["professor"]
+    query = "SELECT DISTINCT c.CourseName " + \
+            "FROM courses c " + \
+            "INNER JOIN timetable t ON t.FK_CourseId = c.CourseId " + \
+            "INNER JOIN professors p ON p.ProfessorId = t.FK_ProfessorId " + \
+            "INNER JOIN groups g ON g.GroupId = t.FK_GroupId " + \
+            "INNER JOIN students s ON s.FK_GroupId = g.GroupId " + \
+            f"WHERE s.Surname = '{student}' " + \
+            f"AND p.Surname = '{professor}'"
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["CourseName"]
+    return redirect("/")
+
+
+@app.route("/query5", methods=["POST"])
+def query5():
+    query = "SELECT g.GroupName, COUNT(*) AS StudentCount " + \
+            "FROM groups g " + \
+            "INNER JOIN students s ON s.Fk_GroupId = g.GroupId " + \
+            "GROUP BY g.GroupId, g.GroupName " + \
+            "ORDER BY StudentCount DESC " + \
+            "LIMIT 1"
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["GroupName", "StudentCount"]
+    return redirect("/")
+
+
+@app.route("/query6", methods=["POST"])
+def query6():
+    query = "SELECT DISTINCT p1.Surname, p2.Surname " + \
+        "FROM professors p1 " + \
+        "INNER JOIN timetable t1 ON t1.FK_ProfessorId = p1.ProfessorId " + \
+        "INNER JOIN ( " + \
+            "SELECT GROUP_CONCAT(DISTINCT LectureDay ORDER BY LectureDay) AS lecture_days, FK_ProfessorId "+ \
+            "FROM timetable " + \
+            "GROUP BY FK_ProfessorId " + \
+        ") AS t2 ON t2.lecture_days = ( " + \
+            "SELECT GROUP_CONCAT(DISTINCT LectureDay ORDER BY LectureDay) "+ \
+            "FROM timetable " + \
+            "WHERE FK_ProfessorId = p1.ProfessorId " + \
+        ") " + \
+        "INNER JOIN professors p2 ON p2.ProfessorId = t2.FK_ProfessorId AND p2.ProfessorId != p1.ProfessorId " 
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["Surname1", "Surname2"]
+    return redirect("/")
+
+
+@app.route("/query7", methods=["POST"])
+def query7():
+    query = "SELECT DISTINCT g1.GroupName, g2.GroupName " + \
+            "FROM groups g1 " + \
+            "INNER JOIN timetable t1 ON t1.FK_GroupId = g1.GroupId " + \
+            "INNER JOIN ( " + \
+                "SELECT g.GroupId, GROUP_CONCAT(DISTINCT c.CourseId ORDER BY c.CourseId) AS course_ids " + \
+                "FROM groups g " + \
+                "INNER JOIN timetable t ON t.FK_GroupId = g.GroupId " + \
+                "INNER JOIN courses c ON c.CourseId = t.FK_CourseId " + \
+                "GROUP BY g.GroupId " + \
+            ") AS g2courses ON g2courses.course_ids = ( " + \
+                "SELECT GROUP_CONCAT(DISTINCT c.CourseId ORDER BY c.CourseId) " + \
+                "FROM groups g " + \
+                "INNER JOIN timetable t ON t.FK_GroupId = g1.GroupId " + \
+                "INNER JOIN courses c ON c.CourseId = t.FK_CourseId " + \
+                "WHERE g.GroupId = g1.GroupId " + \
+            ") " + \
+            "INNER JOIN groups g2 ON g2.GroupId = g2courses.GroupId AND g2.GroupId != g1.GroupId "
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["GroupName1", "GroupName2"]
+    return redirect("/")
+
+
+@app.route("/query8", methods=["POST"])
+def query8():
+    query = "SELECT DISTINCT p1.Surname, p2.Surname " + \
+            "FROM professors p1 " + \
+            "INNER JOIN timetable t1 ON t1.FK_ProfessorId = p1.ProfessorId " + \
+            "INNER JOIN ( " + \
+                "SELECT t2.FK_ProfessorId, GROUP_CONCAT(DISTINCT t2.FK_GroupId ORDER BY t2.FK_GroupId) AS group_ids " + \
+                "FROM timetable t2 " + \
+                "GROUP BY t2.FK_ProfessorId " + \
+            ") AS t2groups ON t2groups.group_ids = ( " + \
+                "SELECT GROUP_CONCAT(DISTINCT t3.FK_GroupId ORDER BY t3.FK_GroupId) " + \
+                "FROM timetable t3 " + \
+                "WHERE t3.FK_ProfessorId = p1.ProfessorId " + \
+            ") " + \
+            "INNER JOIN professors p2 ON p2.ProfessorId = t2groups.FK_ProfessorId AND p2.ProfessorId != p1.ProfessorId " 
+
+    cur.execute(query)
+    session["table"] = cur.fetchall()
+    session["headers"] = ["Surname1", "Surname2"]
     return redirect("/")
