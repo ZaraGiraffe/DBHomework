@@ -151,44 +151,46 @@ def query5():
 
 @app.route("/query6", methods=["POST"])
 def query6():
-    query = "SELECT DISTINCT p1.Surname, p2.Surname " + \
-        "FROM professors p1 " + \
-        "INNER JOIN timetable t1 ON t1.FK_ProfessorId = p1.ProfessorId " + \
-        "INNER JOIN ( " + \
-            "SELECT GROUP_CONCAT(DISTINCT LectureDay ORDER BY LectureDay) AS lecture_days, FK_ProfessorId "+ \
-            "FROM timetable " + \
-            "GROUP BY FK_ProfessorId " + \
-        ") AS t2 ON t2.lecture_days = ( " + \
-            "SELECT GROUP_CONCAT(DISTINCT LectureDay ORDER BY LectureDay) "+ \
-            "FROM timetable " + \
-            "WHERE FK_ProfessorId = p1.ProfessorId " + \
-        ") " + \
-        "INNER JOIN professors p2 ON p2.ProfessorId = t2.FK_ProfessorId AND p2.ProfessorId != p1.ProfessorId " 
+    query = "SELECT DISTINCT p1.ProfessorName " + \
+            "FROM professors AS p1 " + \
+            "WHERE NOT EXISTS ( " + \
+            "    SELECT * " + \
+            "    FROM ( " + \
+            "        SELECT DISTINCT t1.lectureDay AS Days " + \
+            "        FROM timetable AS t1 " + \
+            "    ) AS alldays " + \
+            "    WHERE NOT EXISTS ( " + \
+            "        SELECT * " + \
+            "        FROM timetable AS t2 " + \
+            "        WHERE t2.FK_ProfessorId = p1.ProfessorId " + \
+            "        AND t2.LectureDay = alldays.Days " + \
+            "    ) " + \
+            ")"
     cur.execute(query)
     session["table"] = cur.fetchall()
-    session["headers"] = ["Surname1", "Surname2"]
+    session["headers"] = ["ProfessorName"]
     return redirect("/")
 
 
 @app.route("/query7", methods=["POST"])
 def query7():
-    query = "SELECT DISTINCT g1.GroupName, g2.GroupName " + \
-            "FROM groups g1 " + \
-            "INNER JOIN timetable t1 ON t1.FK_GroupId = g1.GroupId " + \
-            "INNER JOIN ( " + \
-                "SELECT g.GroupId, GROUP_CONCAT(DISTINCT c.CourseId ORDER BY c.CourseId) AS course_ids " + \
-                "FROM groups g " + \
-                "INNER JOIN timetable t ON t.FK_GroupId = g.GroupId " + \
-                "INNER JOIN courses c ON c.CourseId = t.FK_CourseId " + \
-                "GROUP BY g.GroupId " + \
-            ") AS g2courses ON g2courses.course_ids = ( " + \
-                "SELECT GROUP_CONCAT(DISTINCT c.CourseId ORDER BY c.CourseId) " + \
-                "FROM groups g " + \
-                "INNER JOIN timetable t ON t.FK_GroupId = g1.GroupId " + \
-                "INNER JOIN courses c ON c.CourseId = t.FK_CourseId " + \
-                "WHERE g.GroupId = g1.GroupId " + \
-            ") " + \
-            "INNER JOIN groups g2 ON g2.GroupId = g2courses.GroupId AND g2.GroupId != g1.GroupId "
+    profname = request.form["professor"]
+    query = f"""SELECT distinct p1.ProfessorName
+            FROM professors AS p1 
+            WHERE NOT EXISTS (
+                SELECT * 
+                FROM professors AS p2
+                INNER JOIN timetable AS t2 ON p2.ProfessorId = t2.FK_ProfessorId
+                WHERE p2.ProfessorName = p1.ProfessorName 
+                AND EXISTS (
+                    SELECT * 
+                    FROM professors AS p3
+                    INNER JOIN timetable AS t3 ON p3.ProfessorId = t3.FK_ProfessorId
+                    WHERE p3.ProfessorName = '{profname}'
+                    AND t3.FK_CourseId = t2.FK_CourseId
+                )
+            )
+            """
     cur.execute(query)
     session["table"] = cur.fetchall()
     session["headers"] = ["GroupName1", "GroupName2"]
@@ -197,21 +199,51 @@ def query7():
 
 @app.route("/query8", methods=["POST"])
 def query8():
-    query = "SELECT DISTINCT p1.Surname, p2.Surname " + \
-            "FROM professors p1 " + \
-            "INNER JOIN timetable t1 ON t1.FK_ProfessorId = p1.ProfessorId " + \
-            "INNER JOIN ( " + \
-                "SELECT t2.FK_ProfessorId, GROUP_CONCAT(DISTINCT t2.FK_GroupId ORDER BY t2.FK_GroupId) AS group_ids " + \
-                "FROM timetable t2 " + \
-                "GROUP BY t2.FK_ProfessorId " + \
-            ") AS t2groups ON t2groups.group_ids = ( " + \
-                "SELECT GROUP_CONCAT(DISTINCT t3.FK_GroupId ORDER BY t3.FK_GroupId) " + \
-                "FROM timetable t3 " + \
-                "WHERE t3.FK_ProfessorId = p1.ProfessorId " + \
-            ") " + \
-            "INNER JOIN professors p2 ON p2.ProfessorId = t2groups.FK_ProfessorId AND p2.ProfessorId != p1.ProfessorId " 
-
+    profname = request.form["professor"]
+    query = f"""
+    SELECT ProfessorName
+    FROM (
+        SELECT DISTINCT p1.ProfessorName
+        FROM professors AS p1 
+        INNER JOIN timetable AS t1 ON p1.ProfessorId = t1.FK_ProfessorId
+        WHERE t1.FK_GroupId IN (
+            SELECT DISTINCT FK_GroupId
+            FROM timetable AS t2
+            WHERE t2.FK_ProfessorId = (
+                SELECT ProfessorId
+                FROM professors AS p2
+                WHERE p2.ProfessorName = '{profname}'
+            )
+        )
+        AND p1.ProfessorName <> '{profname}'
+        GROUP BY p1.ProfessorName
+        HAVING COUNT(DISTINCT t1.FK_GroupId) = (
+            SELECT COUNT(FK_GroupId)
+            FROM timetable AS t3 
+            WHERE t3.FK_ProfessorId = (
+                SELECT ProfessorId
+                FROM professors AS p3
+                WHERE p3.ProfessorName = '{profname}'
+            )
+        ) 
+    ) AS dop1
+    INNER JOIN (
+        SELECT DISTINCT p4.ProfessorName AS professorName2
+        FROM professors AS p4
+        INNER JOIN timetable AS t4 ON p4.ProfessorId = t4.FK_ProfessorId
+        WHERE p4.ProfessorName <> '{profname}'
+        AND t4.FK_GroupId NOT IN (
+            SELECT DISTINCT FK_GroupId
+            FROM timetable t5 
+            WHERE t5.FK_ProfessorId = (
+                SELECT ProfessorId
+                FROM professors AS p5
+                WHERE p5.ProfessorName = '{profname}'
+            )
+        )
+    ) AS dop2 ON dop1.ProfessorName = dop2.ProfessorName2
+    """
     cur.execute(query)
     session["table"] = cur.fetchall()
-    session["headers"] = ["Surname1", "Surname2"]
+    session["headers"] = ["ProfessorName"]
     return redirect("/")

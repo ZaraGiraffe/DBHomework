@@ -37,7 +37,7 @@
 
 <div>
     <h3> Query 1</h3>
-    <h5> Find all courses that the professor is lecturing for the students in given grade</h1>
+    <h5> Find all courses that the professor is lecturing for the students in given grade</h5>
     <form action="/query1" method="post"> 
         <p> Professor: <input type="text" name="professor"></p>
         <p> Grade: <input type="text" name="course_grade"></p>
@@ -48,7 +48,7 @@
 
 <div>
     <h3> Query 2</h3>
-    <h5> Find all students that have lectures that given professor gives </h1>
+    <h5> Find all students that have lectures that given professor gives </h5>
     <form action="/query2" method="post"> 
         <p> Professor: <input type="text" name="professor"></p>
         <p><input type="submit" value="submit"></p>
@@ -58,7 +58,7 @@
 
 <div>
     <h3> Query 3</h3>
-    <h5> Find all professors that wokr on given day on given faculty</h1>
+    <h5> Find all professors that work on given day on given faculty</h5>
     <form action="/query3" method="post"> 
         <p> Faculty: <input type="text" name="faculty"></p>
         <p> Day: <input type="text" name="day"></p>
@@ -69,7 +69,7 @@
 
 <div>
     <h3> Query 4</h3>
-    <h5> Find all course names where student and professor can meet</h1>
+    <h5> Find all courses where student and professor can meet</h5>
     <form action="/query4" method="post"> 
         <p> Student surname: <input type="text" name="student"></p>
         <p> Professor surname: <input type="text" name="professor"></p>
@@ -80,7 +80,7 @@
 
 <div>
     <h3> Query 5</h3>
-    <h5> Find group with maximum number of students</h1>
+    <h5> Find group with maximum number of students</h5>
     <form action="/query5" method="post"> 
         <p><input type="submit" value="submit"></p>
     </form>
@@ -88,7 +88,7 @@
 
 <div>
     <h3> Query 6</h3>
-    <h5> Find pairs of professors that give lectures on the same set of days</h1>
+    <h5> Find professor that work on every working day</h5>
     <form action="/query6" method="post"> 
         <p><input type="submit" value="submit"></p>
     </form>
@@ -96,16 +96,19 @@
 
 <div>
     <h3> Query 7</h3>
-    <h5> Find groups that have the same set of courses</h1>
+    <h5> Find professors who do not give lectures that given professor give </h5>
     <form action="/query7" method="post"> 
+        <p> Professor: <input type="text" name="professor"></p>
         <p><input type="submit" value="submit"></p>
     </form>
 </div>
 
 <div>
     <h3> Query 8</h3>
-    <h5> Find professors that give lectures to the same set of groups</h1>
+    <h5> Find professors who give lectures to all groups who have lectures with given professor </h5>
+    <h5> and also give at least one lecture to the group that does not have lectures with the given professor</h5>
     <form action="/query8" method="post"> 
+        <p> Professor: <input type="text" name="professor"></p>
         <p><input type="submit" value="submit"></p>
     </form>
 </div>
